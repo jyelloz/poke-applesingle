@@ -15,7 +15,7 @@ var AS_DATA         = 1,
 
 type EntryDescriptor = struct {
   uint32 _id;
-  uint32 _offset;
+  offset<uint32,B> _offset;
   uint32 _len;
 };
 
@@ -45,7 +45,7 @@ type AppleSingleHeader = struct {
 
   method _entry_data = (uint32 id) byte[]: {
     var descriptor = get_entry(id);
-    return byte[descriptor._len] @ descriptor._offset#B;
+    return byte[descriptor._len] @ descriptor._offset;
   }
 
   method data_fork = byte[]: {

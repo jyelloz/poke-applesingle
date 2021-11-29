@@ -14,7 +14,7 @@ var header = AppleSingleHeader @ file : 0#B;
 
 var rsrc = header.get_entry(AS_RSRC);
 
-save :from rsrc._offset#B :size rsrc._len#B :file output;
+save :from rsrc._offset :size rsrc._len#B :file output;
 
 printf "done\n";
 
