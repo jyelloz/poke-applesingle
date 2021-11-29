@@ -1,36 +1,20 @@
-type DataForkDescriptorId = struct {
-  uint32 id = 1;
-  method _print = void: { print "DATA(1)"; }
-};
-type ResourceForkDescriptorId = struct {
-  uint32 id = 2;
-  method _print = void: { print "RSRC(2)"; }
-};
-type RealNameDescriptorId = struct {
-  uint32 id = 3;
-  method _print = void: { print "NAME(3)"; }
-};
-type FileDatesDescriptorId = struct {
-  uint32 id = 8;
-  method _print = void: { print "DATE(8)"; }
-};
-type FinderInfoDescriptorId = struct {
-  uint32 id = 9;
-  method _print = void: { print "FNDR(9)"; }
-};
-type OtherDescriptorId = struct {
-  uint32 _id;
-};
+var AS_DATA         = 1,
+    AS_RSRC         = 2,
+    AS_REAL_NAME    = 3,
+    AS_COMMENT      = 4,
+    AS_ICON_BW      = 5,
+    AS_ICON_COLOR   = 6,
+    AS_FILE_DATES   = 8,
+    AS_FINDER_INFO  = 9,
+    AS_MAC_INFO     = 10,
+    AS_PRODOS_INFO  = 11,
+    AS_MSDOS_INFO   = 12,
+    AS_SHORT_NAME   = 13,
+    AS_AFP_INFO     = 14,
+    AS_DIRECTORY_ID = 15;
 
 type EntryDescriptor = struct {
-  union {
-    DataForkDescriptorId data;
-    ResourceForkDescriptorId rsrc;
-    RealNameDescriptorId name;
-    FileDatesDescriptorId date;
-    FinderInfoDescriptorId fndr;
-    OtherDescriptorId other;
-  };
+  uint32 _id;
   uint32 _offset;
   uint32 _len;
 };
@@ -40,4 +24,52 @@ type AppleSingleHeader = struct {
   uint32 version = 0x0002_0000;
   uint16 n_entries @ 24#B;
   EntryDescriptor[n_entries] descriptors;
+
+  method get_entries_by_type = (uint32 id) EntryDescriptor[]: {
+    var entries = EntryDescriptor[]();
+    for (entry in descriptors where entry._id == id) {
+      entries += [entry];
+    }
+    return entries;
+  }
+
+  method has_entry = (uint32 id) int: {
+    return (get_entries_by_type(id))'length;
+  }
+
+  method get_entry = (uint32 id) EntryDescriptor: {
+    for (descriptor in get_entries_by_type(id)) {
+      return descriptor;
+    }
+  }
+
+  method _entry_data = (uint32 id) byte[]: {
+    var descriptor = get_entry(id);
+    return byte[descriptor._len] @ descriptor._offset#B;
+  }
+
+  method data_fork = byte[]: {
+    return _entry_data(AS_DATA);
+  }
+
+  method resource_fork = byte[]: {
+    return _entry_data(AS_RSRC);
+  }
+
+  method filename = string: {
+    return catos(_entry_data(AS_REAL_NAME));
+  }
+
+  method has_filename = uint: {
+    return has_entry(AS_REAL_NAME);
+  }
+
+  method finder_info = byte[]: {
+    return _entry_data(AS_FINDER_INFO);
+  }
+
+  method has_finder_info = uint: {
+    return has_entry(AS_FINDER_INFO);
+  }
+
 };
