@@ -35,40 +35,6 @@ type EntryDescriptor = struct {
   uint32 _len;
 };
 
-type OSType = struct {
-  char[4] data;
-  method _print = void:
-  {
-    printf "<%s>", catos(data);
-  }
-};
-
-type FinderFlags = struct {
-  struct uint<16> {
-    uint<1> legacy_desktop;
-    uint<3> color;
-    uint<2>;
-    uint<1> shared;
-    uint<1> no_inits;
-    uint<1> has_been_inited;
-    uint<1>;
-    uint<1> has_custom_icon;
-    uint<1> is_stationery;
-    uint<1> name_locked;
-    uint<1> has_bundle;
-    uint<1> is_invisible;
-    uint<1> is_alias;
-  } flags;
-};
-
-type FinderInfo = struct {
-  OSType type_code;
-  OSType creator_code;
-  FinderFlags flags;
-  uint32 location;
-  uint16 folder;
-};
-
 type AppleSingleHeader = struct {
   uint32 magic = 0x0005_1600;
   uint32 version = 0x0002_0000;
