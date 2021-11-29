@@ -1,0 +1,66 @@
+type OSType = struct {
+  char[4] data;
+  method _print = void:
+  { printf "#<%s>", catos(data); }
+};
+
+var FNDR_IS_ON_DESK      = 1 <<. 0,
+    FNDR_MASK_COLOR      = 0b111,
+    FNDR_IS_SHARED       = 1 <<. 6,
+    FNDR_HAS_NO_INITS    = 1 <<. 7,
+    FNDR_HAS_BEEN_INITED = 1 <<. 8,
+    FNDR_HAS_CUSTOM_ICON = 1 <<. 10,
+    FNDR_IS_STATIONERY   = 1 <<. 11,
+    FNDR_NAME_LOCKED     = 1 <<. 12,
+    FNDR_HAS_BUNDLE      = 1 <<. 13,
+    FNDR_IS_INVISIBLE    = 1 <<. 14,
+    FNDR_IS_ALIAS        = 1 <<. 15;
+
+type FinderFlags = struct {
+  uint16 flags;
+  method _print = void:
+  {
+    var s = "";
+    if (flags & FNDR_IS_ON_DESK) {
+      s += "DESKTOP,";
+    }
+    var color = (flags .>> 1) & FNDR_MASK_COLOR;
+    s += "COLOR=" + ltos(color) + ",";
+    if (flags & FNDR_IS_SHARED) {
+      s += "SHARED,";
+    }
+    if (flags & FNDR_HAS_NO_INITS) {
+      s += "NO_INIT,";
+    }
+    if (flags & FNDR_HAS_BEEN_INITED) {
+      s += "INITED,";
+    }
+    if (flags & FNDR_HAS_CUSTOM_ICON) {
+      s += "ICON,";
+    }
+    if (flags & FNDR_IS_STATIONERY) {
+      s += "STATIONERY,";
+    }
+    if (flags & FNDR_NAME_LOCKED) {
+      s += "NAME_LOCKED,";
+    }
+    if (flags & FNDR_HAS_BUNDLE) {
+      s += "BUNDLE,";
+    }
+    if (flags & FNDR_IS_INVISIBLE) {
+      s += "INVISIBLE,";
+    }
+    if (flags & FNDR_IS_ALIAS) {
+      s += "ALIAS,";
+    }
+    print "#<" + rtrim(s, ",") + ">";
+  }
+};
+
+type FinderInfo = struct {
+  OSType type_code;
+  OSType creator_code;
+  FinderFlags flags;
+  uint8[4] location;
+  uint8[2] folder;
+};
