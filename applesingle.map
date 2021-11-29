@@ -1,0 +1,27 @@
+load applesingle;
+load applefinder;
+
+%%
+
+%entry
+%name header
+%type AppleSingleHeader
+%offset 0#B
+
+%entry
+%name finder_info
+%type FinderInfo
+%condition (AppleSingleHeader @ 0#B).has_finder_info
+%offset (AppleSingleHeader @ 0#B).finder_info'offset
+
+%entry
+%name data_fork_descriptor
+%type EntryDescriptor
+%condition (AppleSingleHeader @ 0#B).has_entry(AS_DATA)
+%offset (AppleSingleHeader @ 0#B).get_entry(AS_DATA)'offset
+
+%entry
+%name resource_fork_descriptor
+%type EntryDescriptor
+%condition (AppleSingleHeader @ 0#B).has_entry(AS_RSRC)
+%offset (AppleSingleHeader @ 0#B).get_entry(AS_RSRC)'offset
