@@ -41,7 +41,7 @@ var header = AppleSingleHeader @ file : 0#B;
 
 var stream = header.get_entry(id);
 
-save :from stream._offset :size stream._len#B :file output;
+save :ios file :from stream._offset :size stream._len#B :file output;
 
 printf "done\n";
 
