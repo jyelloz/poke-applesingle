@@ -55,6 +55,9 @@ type FinderFlags = struct {
     }
     print "#<" + rtrim(s, ",") + ">";
   }
+  method on = (uint bits) void: {
+    flags |= bits;
+  }
 };
 
 type FinderInfo = struct {
