@@ -32,6 +32,7 @@ var type_code = ostype(argv[3]);
 var creator_code = ostype(argv[4]);
 var comment = argv[5];
 var output_filename = argv[6];
+var custom_icon = argv'length > 6;
 
 printf "combining DATA:`%s' with RSRC:`%s'\n", data_filename, rsrc_filename;
 
@@ -43,6 +44,10 @@ var finf = FinderInfo {
   type_code=type_code,
   creator_code=creator_code,
 };
+
+if (custom_icon) {
+  finf.flags.on(FNDR_HAS_CUSTOM_ICON);
+}
 
 var date = FileDates {};
 
