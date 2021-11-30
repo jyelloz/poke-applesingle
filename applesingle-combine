@@ -16,6 +16,15 @@ fun ostype = (string fourcc) OSType: {
   return code;
 };
 
+fun calculate_offsets = (AppleSingleHeader header) void: {
+  header.descriptors[0]._offset = header'size;
+  for (var i = 1; i < header.n_entries; i += 1) {
+    var previous = header.descriptors[i - 1];
+    var current = header.descriptors[i];
+    current._offset = previous.next_offset;
+  }
+};
+
 var data_filename = argv[0];
 var rsrc_filename = argv[1];
 var real_name = argv[2];
@@ -64,17 +73,6 @@ var descriptors = [
   },
 ];
 
-fun calculate_offsets = (AppleSingleHeader header) void: {
-
-  header.descriptors[0]._offset = header'size;
-  for (var i = 1; i < header.n_entries; i += 1) {
-    var previous = header.descriptors[i - 1];
-    var current = header.descriptors[i];
-    current._offset = previous.next_offset;
-  }
-
-};
-
 var header = AppleSingleHeader {
   n_entries=descriptors'length,
   descriptors=descriptors,
@@ -82,7 +80,31 @@ var header = AppleSingleHeader {
 
 calculate_offsets(header);
 
-printf "%Tv\n", header;
+var temp = open("*temp*", IOS_M_RDWR);
+
+AppleSingleHeader @ temp : 0#B = header;
+
+copy :from_ios temp :to_ios output :from 0#B :to 0#B :size header'size;
+
+string @ temp : 0#B = real_name;
+
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_REAL_NAME)._offset :size real_name'length#B;
+
+FileDates @ temp : 0#B = date;
+
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_FILE_DATES)._offset :size date'size;
+
+FinderInfo @ temp : 0#B = finf;
+
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_FINDER_INFO)._offset :size finf'size;
+
+copy :from_ios data :to_ios output :from 0#B :to header.get_entry(AS_DATA)._offset :size iosize(data);
+
+copy :from_ios rsrc :to_ios output :from 0#B :to header.get_entry(AS_RSRC)._offset :size iosize(rsrc);
+
+string @ temp : 0#B = comment;
+
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_COMMENT)._offset :size comment'length#B;
 
 printf "done\n";
 
