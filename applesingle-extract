@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load "applesingle.pk";
+
+var suffixes = [
+  .[1]  = "data",
+  .[2]  = "rsrc",
+  .[3]  = "real_name",
+  .[4]  = "comment",
+  .[5]  = "icon_bw",
+  .[6]  = "icon_color",
+  .[8]  = "file_dates",
+  .[9]  = "finder_info",
+  .[10] = "mac_info",
+  .[11] = "prodos_info",
+  .[12] = "msdos_info",
+  .[13] = "short_name",
+  .[14] = "afp_info",
+  .[15] = "directory_id",
+];
+
+fun suffix = (int id) string: {
+  try {
+    return suffixes[id];
+  } catch (Exception e) {
+    return ltos(id);
+  }
+}
+
+var filename = argv[0];
+var id = atoi(argv[1]);
+var output = filename + "." + suffix(id);
+
+printf "extracting entry %s to `%s'...\n", AS_TYPE_NAME[id], output;
+
+var file = open(filename, IOS_M_RDONLY);
+
+var header = AppleSingleHeader @ file : 0#B;
+
+var stream = header.get_entry(id);
+
+save :from stream._offset :size stream._len#B :file output;
+
+printf "done\n";
+
+// vim: ft=poke :
