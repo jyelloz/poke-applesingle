@@ -63,4 +63,5 @@ type FinderInfo = struct {
   FinderFlags flags;
   uint8[4] location;
   uint8[2] folder;
+  uint8[16] extended;
 };
