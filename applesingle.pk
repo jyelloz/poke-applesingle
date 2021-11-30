@@ -13,6 +13,23 @@ var AS_DATA         = 1,
     AS_AFP_INFO     = 14,
     AS_DIRECTORY_ID = 15;
 
+var AS_TYPE_NAME = [
+  .[1]  = "DATA",
+  .[2]  = "RSRC",
+  .[3]  = "REAL_NAME",
+  .[4]  = "COMMENT",
+  .[5]  = "ICON_BW",
+  .[6]  = "ICON_COLOR",
+  .[8]  = "FILE_DATES",
+  .[9]  = "FINDER_INFO",
+  .[10] = "MAC_INFO",
+  .[11] = "PRODOS_INFO",
+  .[12] = "MSDOS_INFO",
+  .[13] = "SHORT_NAME",
+  .[14] = "AFP_INFO",
+  .[15] = "DIRECTORY_ID",
+];
+
 type EntryDescriptor = struct {
   uint32 _id;
   offset<uint32,B> _offset;
