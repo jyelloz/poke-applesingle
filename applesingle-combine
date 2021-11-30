@@ -1,0 +1,89 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load "applesingle.pk";
+load "applefinder.pk";
+
+fun ostype = (string fourcc) OSType: {
+  var code = OSType {};
+  try {
+    stoca(fourcc, code.data);
+  } catch (Exception e) {
+    printf "bad type/creator code `%s'\n", fourcc;
+    raise e;
+  }
+  return code;
+};
+
+var data_filename = argv[0];
+var rsrc_filename = argv[1];
+var real_name = argv[2];
+var type_code = ostype(argv[3]);
+var creator_code = ostype(argv[4]);
+var comment = argv[5];
+var output_filename = argv[6];
+
+printf "combining DATA:`%s' with RSRC:`%s'\n", data_filename, rsrc_filename;
+
+var data = open(data_filename, IOS_M_RDONLY);
+var rsrc = open(rsrc_filename, IOS_M_RDONLY);
+var output = open(output_filename, IOS_F_CREATE | IOS_M_RDWR);
+
+var finf = FinderInfo {
+  type_code=type_code,
+  creator_code=creator_code,
+};
+
+var date = FileDates {};
+
+var descriptors = [
+  EntryDescriptor {
+    _id=AS_REAL_NAME,
+    _len=real_name'length,
+  },
+  EntryDescriptor {
+    _id=AS_FILE_DATES,
+    _len=(date'size as offset<uint,B>)'magnitude,
+  },
+  EntryDescriptor {
+    _id=AS_FINDER_INFO,
+    _len=(finf'size as offset<uint,B>)'magnitude,
+  },
+  EntryDescriptor {
+    _id=AS_DATA,
+    _len=(iosize(data) as offset<uint,B>)'magnitude,
+  },
+  EntryDescriptor {
+    _id=AS_RSRC,
+    _len=(iosize(rsrc) as offset<uint,B>)'magnitude,
+  },
+  EntryDescriptor {
+    _id=AS_COMMENT,
+    _len=comment'length,
+  },
+];
+
+fun calculate_offsets = (AppleSingleHeader header) void: {
+
+  header.descriptors[0]._offset = header'size;
+  for (var i = 1; i < header.n_entries; i += 1) {
+    var previous = header.descriptors[i - 1];
+    var current = header.descriptors[i];
+    current._offset = previous.next_offset;
+  }
+
+};
+
+var header = AppleSingleHeader {
+  n_entries=descriptors'length,
+  descriptors=descriptors,
+};
+
+calculate_offsets(header);
+
+printf "%Tv\n", header;
+
+printf "done\n";
+
+// vim: ft=poke :
