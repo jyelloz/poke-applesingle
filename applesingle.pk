@@ -93,3 +93,10 @@ type AppleSingleHeader = struct {
   }
 
 };
+
+type FileDates = struct {
+  int32 creation;
+  int32 modification;
+  int32 backup;
+  int32 access;
+};
