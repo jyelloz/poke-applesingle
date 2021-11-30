@@ -42,8 +42,8 @@ type RsrcRecord = struct {
 };
 
 type RsrcList = struct {
-  uint16 count;
-  RsrcTypeRecord[count] types;
+  uint16 count_minus_one;
+  RsrcTypeRecord[count_minus_one + 1] types;
   method rsrc = (int i) RsrcRecord: {
     var offset = types[i].rsrc_list_offset;
     return RsrcRecord @ offset;
