@@ -1,0 +1,58 @@
+type OSType = struct {
+  char[4] data;
+  method _print = void:
+  { printf "#<%s>", catos(data); }
+};
+
+type RsrcHeader = struct {
+  offset<uint32,B> data_offset;
+  offset<uint32,B> map_offset;
+  uint32 data_size;
+  uint32 map_size;
+};
+
+type RsrcDataBlock = struct {
+  uint32 data_len;
+  byte[data_len] data;
+};
+
+type RsrcMap = struct {
+  RsrcHeader _reserved_header;
+  uint32 next_resource_map;
+  uint16 file_ref;
+  uint16 attributes;
+  offset<uint16,B> type_list_offset;
+  offset<uint16,B> name_list_offset;
+};
+
+type RsrcTypeRecord = struct {
+  OSType rsrc_type;
+  uint16 count_minus_one;
+  offset<uint16,B> rsrc_list_offset;
+  method count = uint:
+  { return count_minus_one + 1; }
+};
+
+type RsrcRecord = struct {
+  uint16 id;
+  uint16 name_offset;
+  byte attributes;
+  uint<24> data_offset;
+  uint32 resource_ptr;
+};
+
+type RsrcList = struct {
+  uint16 count;
+  RsrcTypeRecord[count] types;
+  method rsrc = (int i) RsrcRecord: {
+    var offset = types[i].rsrc_list_offset;
+    return RsrcRecord @ offset;
+  }
+};
+
+type PString = struct {
+  uint8 len;
+  char[len] _text;
+  method text = string:
+  { return string @ _text'offset; }
+};
