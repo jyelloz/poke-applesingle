@@ -34,6 +34,9 @@ type EntryDescriptor = struct {
   uint32 _id;
   offset<uint32,B> _offset;
   uint32 _len;
+  method next_offset = offset<uint32,B>: {
+    return _offset + _len#B;
+  }
 };
 
 type AppleSingleHeader = struct {
