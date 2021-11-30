@@ -53,6 +53,21 @@ type RsrcList = struct {
 type PString = struct {
   uint8 len;
   char[len] _text;
-  method text = string:
-  { return string @ _text'offset; }
+  method text = string: {
+    return catos(_text);
+  }
+  method _print = void: {
+    printf "%v", text;
+  }
+};
+
+type RsrcNameList = struct {
+  PString[] names;
+};
+
+type RsrcFork = struct {
+  RsrcHeader header;
+  RsrcMap map @ header.map_offset;
+  RsrcList rsrcs @ map'offset + map.type_list_offset;
+  RsrcNameList names @ map'offset + map.name_list_offset;
 };
