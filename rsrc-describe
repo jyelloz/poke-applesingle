@@ -2,18 +2,16 @@
 exec poke -L "$0" "$@"
 !#
 
-load "applersrc.pk";
+load applersrc;
 
 var filename = argv[0];
 
 var file = open(filename, IOS_M_RDONLY);
 
-var rsrc = RsrcHeader @ file : 0#B;
-var map = RsrcMap @ rsrc.map_offset;
-var type_list = RsrcList @ rsrc.map_offset + map.type_list_offset;
+var rsrc = RsrcFork @ file : 0#B;
 
-for (rsrc_type in type_list.types) {
-  printf "%s\n", string @ rsrc_type.rsrc_type.data'offset;
+for (rsrc_type in rsrc.rsrcs.types) {
+  printf "%s\n", rsrc_type.rsrc_type_name;
 }
 
 // vim: ft=poke :
