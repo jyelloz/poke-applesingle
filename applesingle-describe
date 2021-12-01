@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load applesingle;
+
+fun describe = (string path) void: {
+
+  printf "file: %s\n", path;
+
+  var file = open(path, IOS_M_RDONLY);
+  var header = AppleSingleHeader @ file : 0#B;
+
+  if (header.has_filename) {
+    printf " filename: %v\n", header.filename;
+  }
+  if (header.has_comment) {
+    printf " comment: %v\n", header.comment;
+  }
+  if (header.has_file_dates) {
+    var dates = header.file_dates;
+    printf " created at: %v\n", dates.creation;
+    printf " modified at: %v\n", dates.modification;
+  }
+  if (header.has_finder_info) {
+    var finf = header.finder_info;
+    printf " type code: %v\n", finf.type_code;
+    printf " creator code: %v\n", finf.creator_code;
+  }
+  close(file);
+}
+
+for (path in argv) {
+  describe(path);
+}
+
+// vim: ft=poke :
