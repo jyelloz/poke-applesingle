@@ -25,8 +25,12 @@ type RsrcTypeRecord = struct {
   OSType rsrc_type;
   uint16 count_minus_one;
   offset<uint16,B> rsrc_list_offset;
-  method count = uint:
-  { return count_minus_one + 1; }
+  method count = uint: {
+    return count_minus_one + 1;
+  }
+  method rsrc_type_name = string: {
+    return string @ rsrc_type.data'offset;
+  }
 };
 
 type RsrcRecord = struct {
