@@ -1,5 +1,6 @@
 load applesingle;
 load applefinder;
+load applersrc;
 
 %%
 
@@ -25,3 +26,9 @@ load applefinder;
 %type EntryDescriptor
 %condition (AppleSingleHeader @ 0#B).has_entry(AS_RSRC)
 %offset (AppleSingleHeader @ 0#B).get_entry(AS_RSRC)'offset
+
+%entry
+%name resource_fork
+%type RsrcHeader
+%condition (AppleSingleHeader @ 0#B).has_entry(AS_RSRC)
+%offset (AppleSingleHeader @ 0#B).get_entry(AS_RSRC)._offset
