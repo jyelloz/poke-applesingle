@@ -13,6 +13,23 @@ var AS_DATA         = 1,
     AS_AFP_INFO     = 14,
     AS_DIRECTORY_ID = 15;
 
+var AS_TYPES = [
+    AS_DATA,
+    AS_RSRC,
+    AS_REAL_NAME,
+    AS_COMMENT,
+    AS_ICON_BW,
+    AS_ICON_COLOR,
+    AS_FILE_DATES,
+    AS_FINDER_INFO,
+    AS_MAC_INFO,
+    AS_PRODOS_INFO,
+    AS_MSDOS_INFO,
+    AS_SHORT_NAME,
+    AS_AFP_INFO,
+    AS_DIRECTORY_ID,
+];
+
 var AS_TYPE_NAME = [
   .[1]  = "DATA",
   .[2]  = "RSRC",
