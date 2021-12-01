@@ -9,9 +9,9 @@ fun ostype = (string fourcc) OSType: {
   var code = OSType {};
   try {
     stoca(fourcc, code.data);
-  } catch (Exception e) {
+  } catch {
     printf "bad type/creator code `%s'\n", fourcc;
-    raise e;
+    raise;
   }
   return code;
 };
