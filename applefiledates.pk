@@ -3,14 +3,26 @@ load time;
 var MAC_EPOCH = 946684800L;
 
 type MacDate = struct {
-  int32 ts;
+  int32 seconds;
+  method unix_timestamp = int64: {
+    return (seconds as int64) + MAC_EPOCH;
+  }
+  method as_timespec = Timespec: {
+    return Timespec { sec=unix_timestamp };
+  }
+  method from_timespec = (Timespec time) void: {
+    seconds = (time.sec - MAC_EPOCH) as int32;
+  }
+  method set_earliest = void: {
+    seconds = 1 <<. 31;
+  }
   method _print = void: {
-    var unix_ts = (ts as int64) + MAC_EPOCH;
+    var unix_ts = unix_timestamp;
     print "#<";
     if (unix_ts >= 0) {
       ptime(unix_ts);
     } else {
-      printf "%i32x", ts;
+      printf "%i32x", seconds;
     }
     print ">";
   }
@@ -21,4 +33,14 @@ type FileDates = struct {
   MacDate modification;
   MacDate backup;
   MacDate access;
+};
+
+fun filedatesnow = FileDates: {
+  var now = gettimeofday;
+  var dates = FileDates {};
+  dates.creation.from_timespec(now);
+  dates.modification.from_timespec(now);
+  dates.backup.set_earliest();
+  dates.access.set_earliest();
+  return dates;
 };
