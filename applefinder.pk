@@ -1,8 +1,4 @@
-type OSType = struct {
-  char[4] data;
-  method _print = void:
-  { printf "#<%s>", catos(data); }
-};
+load applebase;
 
 var FNDR_IS_ON_DESK      = 1 <<. 0,
     FNDR_MASK_COLOR      = 0b111,
