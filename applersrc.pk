@@ -1,8 +1,4 @@
-type OSType = struct {
-  char[4] data;
-  method _print = void:
-  { printf "#<%s>", catos(data); }
-};
+load applebase;
 
 type RsrcHeader = struct {
   offset<uint32,B> data_offset;
