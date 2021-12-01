@@ -146,4 +146,18 @@ type AppleSingleHeader = struct {
     return has_entry(AS_FILE_DATES);
   }
 
+  method comment = string: {
+    try {
+      return catos(_entry_data(AS_COMMENT));
+    } catch if E_eof {
+      var entry = get_entry(AS_COMMENT);
+      var array = char[] @ entry._offset;
+      return catos(array);
+    }
+  }
+
+  method has_comment = uint: {
+    return has_entry(AS_COMMENT);
+  }
+
 };
