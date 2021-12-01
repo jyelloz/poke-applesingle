@@ -2,8 +2,10 @@
 exec poke -L "$0" "$@"
 !#
 
+load argp;
 load applesingle;
 load applefinder;
+load applersrc;
 
 fun calculate_offsets = (AppleSingleHeader header) void: {
   header.descriptors[0]._offset = header'size;
@@ -14,27 +16,137 @@ fun calculate_offsets = (AppleSingleHeader header) void: {
   }
 };
 
-var data_filename = argv[0];
-var rsrc_filename = argv[1];
-var real_name = argv[2];
-var type_code = ostype(argv[3]);
-var creator_code = ostype(argv[4]);
-var comment = argv[5];
-var output_filename = argv[6];
-var custom_icon = argv'length > 6;
-
-printf "combining DATA:`%s' with RSRC:`%s'\n", data_filename, rsrc_filename;
-
-var data = open(data_filename, IOS_M_RDONLY);
-var rsrc = open(rsrc_filename, IOS_M_RDONLY);
-var output = open(output_filename, IOS_F_CREATE | IOS_M_RDWR);
-
-var finf = FinderInfo {
-  type_code=type_code,
-  creator_code=creator_code,
+type InputFile = struct {
+  string path;
+  int fd;
+  method size = offset<uint64,B>: {
+    return iosize(fd);
+  }
+  method save = (int to_ios, offset<uint32,B> to) void: {
+    (copy :from_ios fd
+      :to_ios to_ios
+      :from 0#B
+      :to to
+      :size iosize(fd));
+  }
 };
 
-if (custom_icon) {
+fun inputfile = (string path) InputFile: {
+  var fd = open(path, IOS_M_RDONLY);
+  return InputFile {
+    fd=fd,
+    path=path,
+  };
+}
+
+type OutputFile = struct {
+  string path;
+  int fd;
+};
+
+fun outputfile = (string path) OutputFile: {
+  var fd = open(path, IOS_F_CREATE | IOS_M_RDWR);
+  return OutputFile {
+    fd=fd,
+    path=path,
+  };
+}
+
+type Command = struct {
+  InputFile data;
+  InputFile rsrc;
+  OSType type_code;
+  OSType creator_code;
+  string real_name;
+  string comment;
+  OutputFile output;
+};
+
+var cmd = Command {};
+
+var opts = [
+  Argp_Option {
+    name="d",
+    long_name="data",
+    summary="file containing data fork",
+    arg_name="DATA_FILE",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.data = inputfile(s); },
+  },
+  Argp_Option {
+    name="r",
+    long_name="rsrc",
+    summary="file containing resource fork",
+    arg_name="RSRC_FILE",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.rsrc = inputfile(s); },
+  },
+  Argp_Option {
+    name="n",
+    long_name="filename",
+    summary="real filename",
+    arg_name="FILENAME",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.real_name = s; },
+  },
+  Argp_Option {
+    name="c",
+    long_name="creator",
+    summary="four character file creator code",
+    arg_name="CREATOR",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.creator_code = ostype(s); },
+  },
+  Argp_Option {
+    name="t",
+    long_name="type",
+    summary="four character file type code",
+    arg_name="TYPE",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.type_code = ostype(s); },
+  },
+  Argp_Option {
+    name="m",
+    long_name="comment",
+    summary="finder comment text",
+    arg_name="COMMENT",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.comment = s; },
+  },
+  Argp_Option {
+    name="o",
+    long_name="output",
+    summary="output AppleSingle file",
+    arg_name="OUTPUT_FILE",
+    arg_required=1,
+    handler=lambda (string s) void: { cmd.output = outputfile(s); },
+  },
+];
+
+argp_parse :program "applesingle-combine" :opts opts :argv argv;
+
+printf "DATA:`%s' | RSRC:`%s' => `%s'\n",
+  cmd.data.path,
+  cmd.rsrc.path,
+  cmd.output.path;
+
+var finf = FinderInfo {
+  type_code=cmd.type_code,
+  creator_code=cmd.creator_code,
+};
+
+fun has_icns_resource = int: {
+  var rsrc_fork = RsrcFork @ cmd.rsrc.fd : 0#B;
+  var types = rsrc_fork.rsrcs.types;
+  try {
+    for (rsrc_type in types where rsrc_type.rsrc_type_name == "icns") {
+      return 1;
+    }
+  } catch {}
+  return 0;
+};
+
+if (has_icns_resource) {
   finf.flags.on(FNDR_HAS_CUSTOM_ICON);
 }
 
@@ -43,7 +155,7 @@ var date = FileDates {};
 var descriptors = [
   EntryDescriptor {
     _id=AS_REAL_NAME,
-    _len=real_name'length#B,
+    _len=cmd.real_name'length#B,
   },
   EntryDescriptor {
     _id=AS_FILE_DATES,
@@ -55,15 +167,15 @@ var descriptors = [
   },
   EntryDescriptor {
     _id=AS_DATA,
-    _len=iosize(data),
+    _len=cmd.data.size,
   },
   EntryDescriptor {
     _id=AS_RSRC,
-    _len=iosize(rsrc),
+    _len=cmd.rsrc.size,
   },
   EntryDescriptor {
     _id=AS_COMMENT,
-    _len=comment'length#B,
+    _len=cmd.comment'length#B,
   },
 ];
 
@@ -78,11 +190,13 @@ var temp = open("*temp*", IOS_M_RDWR);
 
 AppleSingleHeader @ temp : 0#B = header;
 
+var output = cmd.output.fd;
+
 copy :from_ios temp :to_ios output :from 0#B :to 0#B :size header'size;
 
-string @ temp : 0#B = real_name;
+string @ temp : 0#B = cmd.real_name;
 
-copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_REAL_NAME)._offset :size real_name'length#B;
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_REAL_NAME)._offset :size cmd.real_name'length#B;
 
 FileDates @ temp : 0#B = date;
 
@@ -92,13 +206,12 @@ FinderInfo @ temp : 0#B = finf;
 
 copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_FINDER_INFO)._offset :size finf'size;
 
-copy :from_ios data :to_ios output :from 0#B :to header.get_entry(AS_DATA)._offset :size iosize(data);
+cmd.data.save :to_ios output :to header.get_entry(AS_DATA)._offset;
+cmd.rsrc.save :to_ios output :to header.get_entry(AS_RSRC)._offset;
 
-copy :from_ios rsrc :to_ios output :from 0#B :to header.get_entry(AS_RSRC)._offset :size iosize(rsrc);
+string @ temp : 0#B = cmd.comment;
 
-string @ temp : 0#B = comment;
-
-copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_COMMENT)._offset :size comment'length#B;
+copy :from_ios temp :to_ios output :from 0#B :to header.get_entry(AS_COMMENT)._offset :size cmd.comment'length#B;
 
 printf "done\n";
 
