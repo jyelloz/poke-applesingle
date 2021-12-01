@@ -153,30 +153,12 @@ if (has_icns_resource) {
 var date = FileDates {};
 
 var descriptors = [
-  EntryDescriptor {
-    _id=AS_REAL_NAME,
-    _len=cmd.real_name'length#B,
-  },
-  EntryDescriptor {
-    _id=AS_FILE_DATES,
-    _len=date'size,
-  },
-  EntryDescriptor {
-    _id=AS_FINDER_INFO,
-    _len=finf'size,
-  },
-  EntryDescriptor {
-    _id=AS_DATA,
-    _len=cmd.data.size,
-  },
-  EntryDescriptor {
-    _id=AS_RSRC,
-    _len=cmd.rsrc.size,
-  },
-  EntryDescriptor {
-    _id=AS_COMMENT,
-    _len=cmd.comment'length#B,
-  },
+  entrydescriptor(AS_REAL_NAME,   cmd.real_name'length#B),
+  entrydescriptor(AS_FILE_DATES,  date'size),
+  entrydescriptor(AS_FINDER_INFO, finf'size),
+  entrydescriptor(AS_DATA,        cmd.data.size),
+  entrydescriptor(AS_RSRC,        cmd.rsrc.size),
+  entrydescriptor(AS_COMMENT,     cmd.comment'length#B),
 ];
 
 var header = AppleSingleHeader {
