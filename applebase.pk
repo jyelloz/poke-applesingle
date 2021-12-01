@@ -1,0 +1,16 @@
+type OSType = struct {
+  char[4] data;
+  method _print = void:
+  { printf "#<%s>", catos(data); }
+};
+
+fun ostype = (string fourcc) OSType: {
+  var code = OSType {};
+  try {
+    stoca(fourcc, code.data);
+  } catch {
+    printf "bad type/creator code `%s'\n", fourcc;
+    raise;
+  }
+  return code;
+};
