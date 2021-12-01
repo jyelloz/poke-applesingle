@@ -47,13 +47,39 @@ var AS_TYPE_NAME = [
   .[15] = "DIRECTORY_ID",
 ];
 
+type EntryDescriptorId = struct {
+  uint32 id;
+  method _print = void: {
+    if (id in AS_TYPES) {
+      printf "%s(%u32d)", AS_TYPE_NAME[id], id;
+    } else {
+      printf "%u32d", id;
+    }
+  }
+};
+
 type EntryDescriptor = struct {
-  uint32 _id;
+  EntryDescriptorId _id;
   offset<uint32,B> _offset;
   offset<uint32,B> _len;
+  method id = uint32: {
+    return _id.id;
+  }
   method next_offset = offset<uint32,B>: {
     return _offset + _len;
   }
+};
+
+fun entrydescriptor = (
+  uint32 id,
+  offset<uint32,B> len,
+  offset<uint32,B> offset=0#B
+) EntryDescriptor: {
+  return EntryDescriptor {
+    _id=EntryDescriptorId { id=id },
+    _offset=offset,
+    _len=len,
+  };
 };
 
 type AppleSingleHeader = struct {
@@ -64,7 +90,7 @@ type AppleSingleHeader = struct {
 
   method get_entries_by_type = (uint32 id) EntryDescriptor[]: {
     var entries = EntryDescriptor[]();
-    for (entry in descriptors where entry._id == id) {
+    for (entry in descriptors where entry.id == id) {
       entries += [entry];
     }
     return entries;
