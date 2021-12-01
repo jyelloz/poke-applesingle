@@ -1,0 +1,24 @@
+load time;
+
+var MAC_EPOCH = 946684800L;
+
+type MacDate = struct {
+  int32 ts;
+  method _print = void: {
+    var unix_ts = (ts as int64) + MAC_EPOCH;
+    print "#<";
+    if (unix_ts >= 0) {
+      ptime(unix_ts);
+    } else {
+      printf "%i32x", ts;
+    }
+    print ">";
+  }
+};
+
+type FileDates = struct {
+  MacDate creation;
+  MacDate modification;
+  MacDate backup;
+  MacDate access;
+};
