@@ -54,27 +54,27 @@ var date = FileDates {};
 var descriptors = [
   EntryDescriptor {
     _id=AS_REAL_NAME,
-    _len=real_name'length,
+    _len=real_name'length#B,
   },
   EntryDescriptor {
     _id=AS_FILE_DATES,
-    _len=(date'size as offset<uint,B>)'magnitude,
+    _len=date'size,
   },
   EntryDescriptor {
     _id=AS_FINDER_INFO,
-    _len=(finf'size as offset<uint,B>)'magnitude,
+    _len=finf'size,
   },
   EntryDescriptor {
     _id=AS_DATA,
-    _len=(iosize(data) as offset<uint,B>)'magnitude,
+    _len=iosize(data),
   },
   EntryDescriptor {
     _id=AS_RSRC,
-    _len=(iosize(rsrc) as offset<uint,B>)'magnitude,
+    _len=iosize(rsrc),
   },
   EntryDescriptor {
     _id=AS_COMMENT,
-    _len=comment'length,
+    _len=comment'length#B,
   },
 ];
 
