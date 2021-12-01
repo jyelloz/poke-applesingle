@@ -21,8 +21,24 @@ var suffixes = [
   .[15] = "directory_id",
 ];
 
+fun parse_entry_id = (string arg) int: {
+  fun id_name_to_id = int: {
+    for (id in AS_TYPES where arg == suffixes[id]) {
+      return id;
+    }
+    raise E_inval;
+  }
+
+  try {
+    return id_name_to_id;
+  } catch if E_inval {
+    return atoi(arg);
+  }
+}
+
 fun suffix = (int id) string: {
   try {
+    if (!(id in AS_TYPES)) { raise E_inval; }
     return suffixes[id];
   } catch {
     return ltos(id);
@@ -30,7 +46,7 @@ fun suffix = (int id) string: {
 }
 
 var filename = argv[0];
-var id = atoi(argv[1]);
+var id = parse_entry_id(argv[1]);
 var output = filename + "." + suffix(id);
 
 printf "extracting entry %s to `%s'...\n", AS_TYPE_NAME[id], output;
