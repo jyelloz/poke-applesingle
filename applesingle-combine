@@ -150,7 +150,7 @@ if (has_icns_resource) {
   finf.flags.on(FNDR_HAS_CUSTOM_ICON);
 }
 
-var date = FileDates {};
+var date = filedatesnow();
 
 var descriptors = [
   entrydescriptor(AS_REAL_NAME,   cmd.real_name'length#B),
