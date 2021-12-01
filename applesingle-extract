@@ -2,7 +2,7 @@
 exec poke -L "$0" "$@"
 !#
 
-load "applesingle.pk";
+load applesingle;
 
 var suffixes = [
   .[1]  = "data",
@@ -24,7 +24,7 @@ var suffixes = [
 fun suffix = (int id) string: {
   try {
     return suffixes[id];
-  } catch (Exception e) {
+  } catch {
     return ltos(id);
   }
 }
