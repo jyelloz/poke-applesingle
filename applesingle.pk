@@ -90,6 +90,7 @@ type AppleSingleHeader = struct {
   uint32 version = 0x0002_0000;
   uint16 n_entries @ 24#B;
   EntryDescriptor[n_entries] descriptors;
+  var _size = OFFSET;
 
   method get_entries_by_type = (uint32 id) EntryDescriptor[]: {
     var entries = EntryDescriptor[]();
@@ -158,6 +159,16 @@ type AppleSingleHeader = struct {
 
   method has_comment = uint: {
     return has_entry(AS_COMMENT);
+  }
+
+  method calculate_offsets = void: {
+    var descriptors = descriptors;
+    descriptors[0]._offset = _size;
+    for (var i = 1; i < descriptors'length; i += 1) {
+      var previous = descriptors[i - 1];
+      var current = descriptors[i];
+      current._offset = previous.next_offset;
+    }
   }
 
 };
