@@ -45,7 +45,7 @@ type RsrcTypeRecord = struct {
 };
 
 type RsrcRecord = struct {
-  uint16 id;
+  int16 id;
   offset<uint16,B> name_offset;
   byte attributes;
   offset<uint<24>,B> data_offset;
