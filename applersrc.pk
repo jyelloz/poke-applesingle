@@ -85,5 +85,6 @@ type RsrcFork = struct {
   RsrcHeader header;
   RsrcMap map @ header.map_offset;
   RsrcTypeList types @ header.map_offset + map.type_list_offset;
-  RsrcName[] names @ header.map_offset + map.name_list_offset;
+  RsrcName[header.map_size - map.name_list_offset] names
+    @ header.map_offset + map.name_list_offset;
 };
