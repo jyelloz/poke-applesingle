@@ -69,7 +69,7 @@ type RsrcTypeList = struct {
 };
 
 type PString = struct {
-  uint8 len;
+  offset<uint8,B> len;
   char[len] _text;
   method text = string: {
     return catos(_text);
