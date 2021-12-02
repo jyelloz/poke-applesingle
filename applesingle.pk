@@ -1,5 +1,6 @@
 load applefiledates;
 load applefinder;
+load applersrc;
 
 var AS_DATA         = 1,
     AS_RSRC         = 2,
@@ -172,3 +173,8 @@ type AppleSingleHeader = struct {
   }
 
 };
+
+fun applesinglersrc = (AppleSingleHeader header) RsrcFork: {
+  var rsrc = header.get_entry(AS_RSRC);
+  return RsrcFork @ header'ios : rsrc._offset;
+}
