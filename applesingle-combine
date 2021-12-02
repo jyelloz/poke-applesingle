@@ -7,15 +7,6 @@ load applesingle;
 load applefinder;
 load applersrc;
 
-fun calculate_offsets = (AppleSingleHeader header) void: {
-  header.descriptors[0]._offset = header'size;
-  for (var i = 1; i < header.n_entries; i += 1) {
-    var previous = header.descriptors[i - 1];
-    var current = header.descriptors[i];
-    current._offset = previous.next_offset;
-  }
-};
-
 type InputFile = struct {
   string path;
   int fd;
@@ -165,7 +156,7 @@ var header = AppleSingleHeader {
   descriptors=descriptors,
 };
 
-calculate_offsets(header);
+header.calculate_offsets;
 
 var temp = open("*temp*", IOS_M_RDWR);
 
