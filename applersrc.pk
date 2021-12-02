@@ -52,12 +52,19 @@ type RsrcRecord = struct {
   uint32 resource_ptr;
 };
 
-type RsrcList = struct {
+type RsrcTypeList = struct {
   CountOrNone count;
   RsrcTypeRecord[count.count] types;
-  method rsrc = (int i) RsrcRecord: {
-    var offset = types[i].rsrc_list_offset;
-    return RsrcRecord @ offset;
+  method type_name = (string name) RsrcTypeRecord: {
+    for (rsrc in types where rsrc.rsrc_type_name == name) {
+      return rsrc;
+    }
+    raise E_elem;
+  }
+  method rsrc_name = (string name) RsrcRecord[]: {
+    var rsrc_type = type_name(name);
+    var offset = count'offset + rsrc_type.rsrc_list_offset;
+    return RsrcRecord[rsrc_type.count.count] @ offset;
   }
 };
 
@@ -79,6 +86,6 @@ type RsrcNameList = struct {
 type RsrcFork = struct {
   RsrcHeader header;
   RsrcMap map @ header.map_offset;
-  RsrcList rsrcs @ map'offset + map.type_list_offset;
+  RsrcTypeList types @ map'offset + map.type_list_offset;
   RsrcNameList names @ map'offset + map.name_list_offset;
 };
