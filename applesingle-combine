@@ -136,14 +136,13 @@ var finf = FinderInfo {
 };
 
 fun has_icns_resource = int: {
-  var rsrc_fork = RsrcFork @ cmd.rsrc.fd : 0#B;
-  var types = rsrc_fork.rsrcs.types;
   try {
-    for (rsrc_type in types where rsrc_type.rsrc_type_name == "icns") {
-      return 1;
-    }
-  } catch {}
-  return 0;
+    var rsrc_fork = RsrcFork @ cmd.rsrc.fd : 0#B;
+    rsrc_fork.types.type_name("icns");
+    return 1;
+  } catch {
+    return 0;
+  }
 };
 
 if (has_icns_resource) {
