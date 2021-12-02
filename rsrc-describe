@@ -11,7 +11,18 @@ var file = open(filename, IOS_M_RDONLY);
 var rsrc = rsrcfork(file);
 
 for (rsrc_type in rsrc.types.types) {
-  printf "%s\n", rsrc_type.rsrc_type_name;
+  var name = rsrc_type.rsrc_type_name;
+  var rsrcs = rsrc.types.rsrc_name(name);
+  printf "%s\n", name;
+  for (rsrc_record in rsrcs) {
+    printf " id=%v", rsrc_record.id;
+    var name_offset = rsrc_record.name_offset;
+    if (name_offset / #B != 0xffff) {
+      var rsrc_name = rsrc.names'offset + name_offset;
+      printf " name=%v", RsrcName @ file : rsrc_name;
+    }
+    print "\n";
+  }
 }
 
 // vim: ft=poke :
