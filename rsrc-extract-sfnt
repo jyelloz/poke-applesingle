@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load applersrc;
+
+var filename = argv[0];
+
+var file = open(filename, IOS_M_RDONLY);
+
+var rsrc = RsrcFork @ file : 0#B;
+
+var rsrc_type = rsrc.types.type_name("sfnt");
+var rsrc_rsrc = rsrc.types.rsrc_name("sfnt")[0];
+
+var sfnt_head = RsrcDataBlock @ rsrc_rsrc.data_offset + rsrc.header.data_offset;
+
+save :ios rsrc'ios :file filename + ".ttf"
+     :from sfnt_head.data'offset
+     :size sfnt_head.data_len;
+
+// vim: ft=poke :
