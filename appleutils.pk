@@ -1,0 +1,10 @@
+load applesingle;
+load applersrc;
+
+fun rsrcfork = (int32 ios) RsrcFork: {
+  try {
+    var header = AppleSingleHeader @ ios : 0#B;
+    return applesinglersrc(header);
+  } catch {}
+  return RsrcFork @ ios : 0#B;
+}
