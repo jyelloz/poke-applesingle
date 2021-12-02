@@ -3,8 +3,8 @@ load applebase;
 type RsrcHeader = struct {
   offset<uint32,B> data_offset;
   offset<uint32,B> map_offset;
-  uint32 data_size;
-  uint32 map_size;
+  offset<uint32,B> data_size;
+  offset<uint32,B> map_size;
 };
 
 type RsrcDataBlock = struct {
@@ -79,13 +79,11 @@ type PString = struct {
   }
 };
 
-type RsrcNameList = struct {
-  PString[] names;
-};
+type RsrcName = PString;
 
 type RsrcFork = struct {
   RsrcHeader header;
   RsrcMap map @ header.map_offset;
-  RsrcTypeList types @ map'offset + map.type_list_offset;
-  RsrcNameList names @ map'offset + map.name_list_offset;
+  RsrcTypeList types @ header.map_offset + map.type_list_offset;
+  RsrcName[] names @ header.map_offset + map.name_list_offset;
 };
