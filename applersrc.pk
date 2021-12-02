@@ -22,15 +22,25 @@ type RsrcMap = struct {
   offset<uint16,B> name_list_offset;
 };
 
+type CountOrNone = struct {
+  uint16 _count;
+  method count = uint16: {
+    if (_count == 0xFFFF) {
+      return 0;
+    }
+    return _count + 1;
+  }
+  method _print = void: {
+    printf "%v", count;
+  }
+};
+
 type RsrcTypeRecord = struct {
   OSType rsrc_type;
-  uint16 count_minus_one;
+  CountOrNone count;
   offset<uint16,B> rsrc_list_offset;
-  method count = uint: {
-    return count_minus_one + 1;
-  }
   method rsrc_type_name = string: {
-    return string @ rsrc_type.data'offset;
+    return catos(rsrc_type.data);
   }
 };
 
@@ -43,8 +53,8 @@ type RsrcRecord = struct {
 };
 
 type RsrcList = struct {
-  uint16 count_minus_one;
-  RsrcTypeRecord[count_minus_one + 1] types;
+  CountOrNone count;
+  RsrcTypeRecord[count.count] types;
   method rsrc = (int i) RsrcRecord: {
     var offset = types[i].rsrc_list_offset;
     return RsrcRecord @ offset;
