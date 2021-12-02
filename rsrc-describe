@@ -10,7 +10,7 @@ var file = open(filename, IOS_M_RDONLY);
 
 var rsrc = RsrcFork @ file : 0#B;
 
-for (rsrc_type in rsrc.rsrcs.types) {
+for (rsrc_type in rsrc.types.types) {
   printf "%s\n", rsrc_type.rsrc_type_name;
 }
 
