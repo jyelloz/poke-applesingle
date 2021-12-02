@@ -8,8 +8,9 @@ type RsrcHeader = struct {
 };
 
 type RsrcDataBlock = struct {
-  uint32 data_len;
-  byte[data_len] data;
+  offset<uint32,B> data_len;
+  byte[0] data @ OFFSET;
+  byte[0] @ OFFSET + data_len;
 };
 
 type RsrcMap = struct {
