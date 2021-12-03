@@ -82,6 +82,7 @@ type PString = struct {
 type RsrcName = PString;
 
 type RsrcFork = struct {
+  var _ = set_endian(ENDIAN_BIG);
   RsrcHeader header;
   RsrcMap map @ header.map_offset;
   RsrcTypeList types @ header.map_offset + map.type_list_offset;

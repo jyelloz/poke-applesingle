@@ -87,6 +87,7 @@ fun entrydescriptor = (
 };
 
 type AppleSingleHeader = struct {
+  var _ = set_endian(ENDIAN_BIG);
   uint32 magic = 0x0005_1600;
   uint32 version = 0x0002_0000;
   uint16 n_entries @ 24#B;
