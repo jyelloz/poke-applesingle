@@ -1,0 +1,76 @@
+load applebase;
+load applersrc;
+load time;
+
+var MACBINARY_EPOCH = -2082844800L;
+
+type MacBinaryDate = struct {
+  int32 seconds;
+  method _print = void: {
+    var unix_ts = seconds - MACBINARY_EPOCH;
+    print "#<";
+    if (unix_ts >= 0) {
+      ptime(unix_ts);
+    } else {
+      printf "%i32x", seconds;
+    }
+    print ">";
+  }
+};
+
+type MacBinaryIIHeader = struct {
+  byte version;
+  PString filename;
+  OSType type_code @ 65#B;
+  OSType creator_code;
+  byte finder_flags_hi;
+  byte;
+  uint16 vertical_position;
+  uint16 horizontal_position;
+  uint16 folder_id;
+  byte protected;
+  byte;
+  offset<uint32,B> data_fork_len;
+  offset<uint32,B> rsrc_fork_len;
+  MacBinaryDate creation;
+  MacBinaryDate modification;
+  offset<uint16,B> comment_len;
+  byte[0] @ 128#B;
+};
+
+type MacBinaryIIArchive = struct {
+  MacBinaryIIHeader header;
+  byte[0] data_fork_head;
+  byte[0] @ OFFSET + header.data_fork_len;
+  byte[alignto(OFFSET, 128#B)];
+  byte[0] rsrc_fork_head;
+  byte[0] @ OFFSET + header.rsrc_fork_len;
+  byte[alignto(OFFSET, 128#B)];
+  byte[header.comment_len] _comment;
+  method rsrc_fork = RsrcFork: {
+    if (header.rsrc_fork_len < 1#B) {
+      raise E_inval;
+    }
+    return RsrcFork @ rsrc_fork_head'offset;
+  }
+  method data_fork_segment = Segment: {
+    return Segment {
+      ios=header'ios,
+      offset=data_fork_head'offset,
+      len=header.data_fork_len,
+    };
+  }
+  method rsrc_fork_segment = Segment: {
+    return Segment {
+      ios=header'ios,
+      offset=rsrc_fork_head'offset,
+      len=header.rsrc_fork_len,
+    };
+  }
+  method comment = string: {
+    if (header.comment_len < 1#B) {
+      raise E_elem;
+    }
+    return catos(_comment);
+  }
+};
