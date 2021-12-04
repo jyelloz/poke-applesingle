@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load appleutils;
+
+if (argv'length != 3) {
+  print "usage: rsrc-extract FILE RSRC ID\n";
+  print "Extract resource fork data from FILE with type RSRC "
+      + "and ID to standard output.\n\n"
+      + "FILE may either be a raw resource fork or an AppleSingle archive.\n";
+  exit(1);
+}
+
+fun satoi = (string s) int<64>: {
+  if (s'length > 1) {
+    var first = s[0];
+    if (first == '+') {
+      return atoi(s[1:]);
+    } else if (first == '-') {
+      return -1 * atoi(s[1:]);
+    }
+  }
+  return atoi(s);
+}
+
+fun rsrcid = (RsrcRecord[] rsrcs, int16 id) RsrcRecord: {
+  for (rsrc in rsrcs where rsrc.id == id) {
+    return rsrc;
+  }
+  raise E_elem;
+}
+
+var filename = argv[0];
+var rsrc_type_name = catos(ostype(argv[1]).data);
+var id = satoi(argv[2]);
+
+var file = open(filename, IOS_M_RDONLY);
+var rsrc = rsrcfork(file);
+
+var rsrc_type = rsrc.types.type_name(rsrc_type_name);
+var rsrc_rsrcs = rsrc.types.rsrc_name(rsrc_type_name);
+var rsrc_id = rsrcid(rsrc_rsrcs, id);
+
+var rsrc_offset = rsrc'offset + rsrc_id.data_offset + rsrc.header.data_offset;
+var rsrc_head = RsrcDataBlock @ rsrc_offset;
+
+save :ios rsrc'ios
+     :file "<stdout>"
+     :from rsrc_head.data'offset
+     :size rsrc_head.data_len;
+
+// vim: ft=poke :
