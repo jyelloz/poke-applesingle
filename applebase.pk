@@ -1,3 +1,5 @@
+set_endian(ENDIAN_BIG);
+
 type OSType = struct {
   char[4] data;
   method _print = void:
