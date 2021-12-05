@@ -75,6 +75,11 @@ type MacBinaryIIArchive = struct {
       len=header.rsrc_fork_len,
     };
   }
+
+  method filename = string: {
+    return header.filename.text;
+  }
+
   method comment = string: {
     if (header.comment_len < 1#B) {
       raise E_elem;
