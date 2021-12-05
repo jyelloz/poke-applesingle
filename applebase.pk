@@ -16,3 +16,9 @@ fun ostype = (string fourcc) OSType: {
   }
   return code;
 };
+
+type Segment = struct {
+  int ios;
+  offset<uint64,B> offset;
+  offset<uint64,B> len;
+};
