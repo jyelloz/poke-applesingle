@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+exec poke -L "$0" "$@"
+!#
+
+load argp;
+load macbinary;
+
+var args = argv'length < 1 ? ["--help"] : argv;
+
+argp_parse :program "macbinary-describe"
+           :summary "displays some info about macbinary archive(s)"
+           :argv args
+           :allow_unknown 1;
+
+fun describe = (string path) void: {
+
+  printf "file: %s\n", path;
+
+  var file = open(path, IOS_M_RDONLY);
+  var archive = MacBinaryIIArchive @ file : 0#B;
+
+  try {
+    printf " filename: %v\n", archive.filename;
+  } catch {}
+  try {
+    printf " comment: %v\n", archive.comment;
+  } catch {}
+  try {
+    var dates = archive.dates;
+    printf " created at: %v\n", dates.creation;
+    printf " modified at: %v\n", dates.modification;
+  } catch {}
+  try {
+    var finf = archive.finder_info;
+    printf " type code: %v\n", finf.type_code;
+    printf " creator code: %v\n", finf.creator_code;
+  } catch {}
+  close(file);
+}
+
+for (path in argv) {
+  describe(path);
+}
+
+// vim: ft=poke :
