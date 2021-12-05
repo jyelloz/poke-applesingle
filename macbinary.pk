@@ -1,4 +1,5 @@
 load applersrc;
+load applefinder;
 load applefiledates;
 load applebase;
 load time;
@@ -90,6 +91,16 @@ type MacBinaryIIArchive = struct {
     return FileDates {
       creation=header.creation.as_macdate,
       modification=header.modification.as_macdate,
+    };
+  }
+
+  method finder_info = FinderInfo: {
+    return FinderInfo {
+      type_code=header.type_code,
+      creator_code=header.creator_code,
+      flags=FinderFlags {
+        flags=(header.finder_flags_hi as uint16) <<. 8,
+      },
     };
   }
 
