@@ -189,7 +189,28 @@ type AppleSingleHeader = struct {
 
 };
 
-fun applesinglersrc = (AppleSingleHeader header) RsrcFork: {
-  var rsrc = header.get_segment(AS_RSRC);
-  return RsrcFork @ rsrc.ios : rsrc.offset;
-}
+type AppleSingleArchive = struct {
+  AppleSingleHeader header;
+  method data_fork_segment = Segment: {
+    return header.get_segment(AS_DATA);
+  }
+  method rsrc_fork_segment = Segment: {
+    return header.get_segment(AS_RSRC);
+  }
+  method filename = string: {
+    return header.filename;
+  }
+  method comment = string: {
+    return header.comment;
+  }
+  method dates = FileDates: {
+    return header.file_dates;
+  }
+  method finder_info = FinderInfo: {
+    return header.finder_info;
+  }
+  method rsrc_fork = RsrcFork: {
+    var segment = rsrc_fork_segment;
+    return RsrcFork @ segment.ios : segment.offset;
+  }
+};
