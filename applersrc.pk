@@ -84,7 +84,7 @@ type RsrcName = PString;
 type RsrcFork = struct {
   RsrcHeader header;
   RsrcMap map @ header.map_offset;
-  RsrcDataBlock[header.data_size] data @ header.data_offset;
+  RsrcDataBlock[] data @ header.data_offset;
   RsrcTypeList types @ header.map_offset + map.type_list_offset;
   RsrcName[header.map_size - map.name_list_offset] names
     @ header.map_offset + map.name_list_offset;
