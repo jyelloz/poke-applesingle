@@ -55,9 +55,9 @@ var file = open(filename, IOS_M_RDONLY);
 
 var header = AppleSingleHeader @ file : 0#B;
 
-var stream = header.get_entry(id);
+var stream = header.get_segment(id);
 
-save :ios file :from stream._offset :size stream._len :file output;
+save :ios stream.ios :from stream.offset :size stream.len :file output;
 
 printf "done\n";
 
