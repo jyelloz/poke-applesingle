@@ -60,12 +60,7 @@ type MacBinaryIIArchive = struct {
   byte[0] @ OFFSET + header.rsrc_fork_len;
   byte[alignto(OFFSET, 128#B)];
   byte[header.comment_len] _comment;
-  method rsrc_fork = RsrcFork: {
-    if (header.rsrc_fork_len < 1#B) {
-      raise E_inval;
-    }
-    return RsrcFork @ rsrc_fork_head'offset;
-  }
+
   method data_fork_segment = Segment: {
     return Segment {
       ios=header'ios,
@@ -102,6 +97,14 @@ type MacBinaryIIArchive = struct {
         flags=(header.finder_flags_hi as uint16) <<. 8,
       },
     };
+  }
+
+  method rsrc_fork = RsrcFork: {
+    if (header.rsrc_fork_len < 1#B) {
+      raise E_elem;
+    }
+    var segment = rsrc_fork_segment;
+    return RsrcFork @ segment.ios : segment.offset;
   }
 
 };
