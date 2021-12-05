@@ -1,13 +1,25 @@
-load applebase;
 load applersrc;
+load applefiledates;
+load applebase;
 load time;
 
 var MACBINARY_EPOCH = -2082844800L;
 
 type MacBinaryDate = struct {
   int32 seconds;
+  method unix_timestamp = int64: {
+    return (seconds as int64) + MACBINARY_EPOCH;
+  }
+  method as_timespec = Timespec: {
+    return Timespec { sec=unix_timestamp };
+  }
+  method as_macdate = MacDate: {
+    var macdate = MacDate {};
+    macdate.from_timespec(as_timespec);
+    return macdate;
+  }
   method _print = void: {
-    var unix_ts = seconds - MACBINARY_EPOCH;
+    var unix_ts = unix_timestamp;
     print "#<";
     if (unix_ts >= 0) {
       ptime(unix_ts);
@@ -73,4 +85,12 @@ type MacBinaryIIArchive = struct {
     }
     return catos(_comment);
   }
+
+  method dates = FileDates: {
+    return FileDates {
+      creation=header.creation.as_macdate,
+      modification=header.modification.as_macdate,
+    };
+  }
+
 };
