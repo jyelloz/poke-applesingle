@@ -4,8 +4,8 @@ load macbinary;
 
 fun rsrcfork = (int32 ios) RsrcFork: {
   try {
-    var header = AppleSingleHeader @ ios : 0#B;
-    return applesinglersrc(header);
+    var archive = AppleSingleArchive @ ios : 0#B;
+    return archive.rsrc_fork;
   } catch {}
   try {
     var archive = MacBinaryIIArchive @ ios : 0#B;
