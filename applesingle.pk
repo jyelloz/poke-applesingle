@@ -124,8 +124,8 @@ type AppleSingleHeader = struct {
   }
 
   method _entry_data = (uint32 id) byte[]: {
-    var descriptor = get_entry(id);
-    return byte[descriptor._len / #B] @ descriptor._offset;
+    var segment = get_segment(id);
+    return byte[segment.len / #B] @ segment.ios : segment.offset;
   }
 
   method data_fork = byte[]: {
@@ -145,7 +145,8 @@ type AppleSingleHeader = struct {
   }
 
   method finder_info = FinderInfo: {
-    return FinderInfo @ get_entry(AS_FINDER_INFO)._offset;
+    var segment = get_segment(AS_FINDER_INFO);
+    return FinderInfo @ segment.ios : segment.offset;
   }
 
   method has_finder_info = uint: {
@@ -153,7 +154,8 @@ type AppleSingleHeader = struct {
   }
 
   method file_dates = FileDates: {
-    return FileDates @ get_entry(AS_FILE_DATES)._offset;
+    var segment = get_segment(AS_FILE_DATES);
+    return FileDates @ segment.ios : segment.offset;
   }
 
   method has_file_dates = uint: {
@@ -161,11 +163,12 @@ type AppleSingleHeader = struct {
   }
 
   method comment = string: {
+    var segment = get_segment(AS_COMMENT);
     try {
-      return catos(_entry_data(AS_COMMENT));
+      var array = char[segment.len] @ segment.ios : segment.offset;
+      return catos(array);
     } catch if E_eof {
-      var entry = get_entry(AS_COMMENT);
-      var array = char[] @ entry._offset;
+      var array = char[] @ segment.ios : segment.offset;
       return catos(array);
     }
   }
@@ -187,6 +190,6 @@ type AppleSingleHeader = struct {
 };
 
 fun applesinglersrc = (AppleSingleHeader header) RsrcFork: {
-  var rsrc = header.get_entry(AS_RSRC);
-  return RsrcFork @ header'ios : rsrc._offset;
+  var rsrc = header.get_segment(AS_RSRC);
+  return RsrcFork @ rsrc.ios : rsrc.offset;
 }
