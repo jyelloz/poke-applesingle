@@ -1,6 +1,7 @@
 load applefiledates;
 load applefinder;
 load applersrc;
+load applebase;
 
 var AS_DATA         = 1,
     AS_RSRC         = 2,
@@ -72,6 +73,13 @@ type EntryDescriptor = struct {
   method next_offset = offset<uint32,B>: {
     return _offset + _len;
   }
+  method as_segment = Segment: {
+    return Segment {
+      ios=_id'ios,
+      offset=_offset,
+      len=_len,
+    };
+  }
 };
 
 fun entrydescriptor = (
@@ -109,6 +117,10 @@ type AppleSingleHeader = struct {
     for (descriptor in get_entries_by_type(id)) {
       return descriptor;
     }
+  }
+
+  method get_segment = (uint32 id) Segment: {
+    return get_entry(id).as_segment;
   }
 
   method _entry_data = (uint32 id) byte[]: {
