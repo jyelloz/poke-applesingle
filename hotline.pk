@@ -54,9 +54,7 @@ type HlInfo = struct {
   OSType creator_code;
   uint32 flags;
   HlPlatformFlags platform_flags;
-  byte[0];
-  byte[0] @ OFFSET + 32#B;
-  HlDate created_at;
+  HlDate created_at @ OFFSET + 32#B;
   HlDate modified_at;
   HlFilename name;
   HlPString comment;
@@ -67,9 +65,7 @@ var HL_FILP_MAGIC = ostype("FILP");
 type HlFlatFileHeader = struct {
   OSType magic = HL_FILP_MAGIC : 1;
   int16 version = 1 : 1;
-  byte[0];
-  byte[0] @ OFFSET + 16#B;
-  int16 fork_count;
+  int16 fork_count @ OFFSET + 16#B;
 };
 
 var HL_FORK_TYPE_INFO = ostype("INFO"),
