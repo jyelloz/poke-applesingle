@@ -1,8 +1,13 @@
 load applersrc;
+load applefinder;
 load applebase;
 
 type HlDate = struct {
   byte[8] data;
+};
+
+type HlPlatformFlags = struct {
+  FinderFlags finder_flags @ 2#B;
 };
 
 type HlPString = struct {
@@ -46,7 +51,7 @@ type HlInfo = struct {
   OSType type_code;
   OSType creator_code;
   uint32 flags;
-  uint32 platform_flags;
+  HlPlatformFlags platform_flags;
   byte[0];
   byte[0] @ OFFSET + 32#B;
   HlDate created_at;
