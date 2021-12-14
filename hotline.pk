@@ -3,7 +3,9 @@ load applefinder;
 load applebase;
 
 type HlDate = struct {
-  byte[8] data;
+  uint16 year;
+  uint16 milliseconds;
+  uint32 seconds;
 };
 
 type HlPlatformFlags = struct {
