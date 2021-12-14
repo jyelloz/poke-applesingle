@@ -1,0 +1,118 @@
+load applersrc;
+load applebase;
+
+type HlDate = struct {
+  byte[8] data;
+};
+
+type HlPString = struct {
+  offset<uint16, B> len;
+  char[len] data;
+  method text = string: {
+    return catos(data);
+  }
+  method _print = void: {
+    printf "%v", text;
+  }
+};
+
+fun hlpstring = (string text) HlPString: {
+  var pstring = HlPString {
+    len = text'length#B,
+  };
+  stoca(text, pstring.data);
+  return pstring;
+};
+
+type HlFilename = struct {
+  byte[2] script;
+  HlPString data;
+  method name = string: {
+    return data.text;
+  }
+  method _print = void: {
+    printf "%v", data;
+  }
+};
+
+fun hlfilename = (string name) HlFilename: {
+  return HlFilename {
+    data = hlpstring(name),
+  };
+};
+
+type HlInfo = struct {
+  OSType platform;
+  OSType type_code;
+  OSType creator_code;
+  uint32 flags;
+  uint32 platform_flags;
+  byte[0];
+  byte[0] @ OFFSET + 32#B;
+  HlDate created_at;
+  HlDate modified_at;
+  HlFilename name;
+  HlPString comment;
+};
+
+var HL_FILP_MAGIC = ostype("FILP");
+
+type HlFlatFileHeader = struct {
+  OSType magic = HL_FILP_MAGIC : 1;
+  int16 version = 1 : 1;
+  byte[0];
+  byte[0] @ OFFSET + 16#B;
+  int16 fork_count;
+};
+
+var HL_FORK_TYPE_INFO = ostype("INFO"),
+    HL_FORK_TYPE_DATA = ostype("DATA"),
+    HL_FORK_TYPE_RSRC = ostype("MACR");
+
+type HlForkHeader = struct {
+  OSType fork_type = HL_FORK_TYPE_INFO : 1;
+  int32 compression_type = 0 : 1;
+  uint32;
+  offset<uint32, B> data_size;
+};
+
+type HlFork = struct {
+  HlForkHeader header;
+  byte[0] stream_head;
+  byte[0] stream_tail @ OFFSET + header.data_size;
+};
+
+fun hlfork = (uint32 size = 0) HlFork: {
+  var header = HlForkHeader {
+    data_size = size#B,
+  };
+  return HlFork {
+    header = header,
+  };
+}
+
+type HlFlatFile = struct {
+  HlFlatFileHeader header;
+  struct {
+    HlForkHeader header;
+    HlInfo body;
+  } info;
+  HlFork[header.fork_count - 1] forks;
+  method fork = (string name) Segment: {
+    var fork_type = ostype(name);
+    for (fork in forks where fork.header.fork_type == fork_type) {
+      return Segment {
+        ios = forks'ios,
+        offset = fork.stream_head'offset,
+        len = fork.header.data_size,
+      };
+    }
+  }
+  method data_fork = Segment: {
+    return fork("DATA");
+  }
+  method rsrc_fork = RsrcFork: {
+    var segment = fork("MACR");
+    return RsrcFork @ segment.ios : segment.offset;
+  }
+};
